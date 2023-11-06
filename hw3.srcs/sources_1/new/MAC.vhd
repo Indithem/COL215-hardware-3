@@ -1,23 +1,3 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 10/28/2023 02:06:26 AM
--- Design Name: 
--- Module Name: MAC - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
@@ -69,11 +49,11 @@ signal kernaldata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 t
 signal writabledata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 to 8
 signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
 
-signal writeenable : std_logic;
+signal wrte : std_logic;
 signal did: std_logic ;
 
-signal got_kernal: std_logic:='1';
-signal got_minmax: std_logic:='1';
+signal got_kernal: std_logic:='0';
+signal got_minmax: std_logic:='0';
 
 signal a1 : integer :=0;
 signal a2 : integer :=0;
@@ -119,7 +99,7 @@ i: img port map(
 
 r: ram port map(
     clk=> InpClk,
-    we=> writeenable,
+    we=> '0',
     a=> ramaddress,
     d=> writabledata
 );
@@ -205,13 +185,13 @@ variable finalans : integer :=0;
 begin
 if(reset='1') then
    done<='0';
-   writeenable<='0';
+--   writeenable<='1';
 
 elsif did='1' then
     done<='1';
     
 elsif got_kernal='1' and got_minmax='1' then
-    writeenable<='1';
+
     case workingstate is
         when getting_data=>
            imgaddressvar := to_integer(unsigned(imgaddress));
@@ -224,7 +204,7 @@ elsif got_kernal='1' and got_minmax='1' then
             imgaddressvar:=imgaddressvar+1;
             if imgaddressvar=4096 then
                 did<='1';
-                writeenable<='0';
+--                writeenable<='0';
                 imgaddressvar:=0;
             else
                 imgaddress<=std_logic_vector(to_unsigned(imgaddressvar,12));

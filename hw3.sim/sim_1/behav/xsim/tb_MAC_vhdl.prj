@@ -1,7 +1,0 @@
-# compile vhdl design source files
-vhdl xil_defaultlib  \
-"../../../../hw3.srcs/sources_1/new/MAC.vhd" \
-"../../../../hw3.srcs/sim_1/new/tb_MAC.vhd" \
-
-# Do not sort compile order
-nosort
