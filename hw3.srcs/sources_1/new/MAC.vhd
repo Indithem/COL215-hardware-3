@@ -139,6 +139,7 @@ end if;
 end process;
 
 process(InpClk)
+-- gets min and max values from the image
 variable counter: integer :=0;
 variable data: integer :=0;
 begin
@@ -155,13 +156,18 @@ if (got_minmax='0') then
                 got_minmax<='1';
             else   
                 data:= to_integer(unsigned(imagedata));
-                
+                if data < minval then
+                    minval <= data;
+                elsif data > maxval then
+                    maxval <= data;
+                end if;
             end if;
     end case;
 end if;
 end process;
 
 process(InpClk)
+--loads all a's
 variable counter: integer :=0;
 begin
 if (got_kernal='0') then
@@ -198,6 +204,7 @@ end if;
 end process;
 
 process(InpClk)
+-- the main function
 variable counter : integer :=0;
 variable imgaddressvar : integer :=0;
 variable finalans : integer :=0;
