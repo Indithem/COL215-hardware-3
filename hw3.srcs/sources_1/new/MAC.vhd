@@ -69,8 +69,8 @@ signal kernaldata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 t
 signal writabledata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 to 8
 signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
 
-signal writeenable : std_logic := '0';
-signal did: std_logic := '0';
+signal writeenable : std_logic;
+signal did: std_logic ;
 
 signal got_kernal: std_logic:='1';
 signal got_minmax: std_logic:='1';
@@ -103,8 +103,8 @@ type state is (getting_data, calculating, writing);
 signal workingstate: state := getting_data;
 
 type read_state is (get, write);
-signal kernalreadstate : read_state:=get;
-signal minmaxreadstate : read_state:=get;
+signal kernalreadstate : read_state;
+signal minmaxreadstate : read_state;
 begin
 
 k:filter port map(
@@ -124,32 +124,21 @@ r: ram port map(
     d=> writabledata
 );
 
-process(reset)
-begin
-if(reset='1') then
-   done<='0';
-   writeenable<='0'; 
-   imgaddress <= (others => '0');
-   ramaddress <= (others => '0');
-   got_kernal <='0';
-   got_minmax <='0';
-   kernalreadstate<=get;
-   minmaxreadstate<=get;
-end if;
-end process;
-
 process(InpClk)
 -- gets min and max values from the image
 variable counter: integer :=0;
 variable data: integer :=0;
 begin
-if (got_minmax='0') then
+if (reset='1') then
+   got_minmax <='0';
+   minmaxreadstate<=get;
+elsif (got_minmax='0') then
     case minmaxreadstate is
         when get=>
             imgaddress <= std_logic_vector(to_unsigned(counter,12));
-            kernalreadstate<= write;
+            minmaxreadstate<= write;
         when write=>
-            kernalreadstate<=get;
+            minmaxreadstate<=get;
             counter:=counter+1;
             if counter=4096 then
                 counter:=0;
@@ -166,11 +155,15 @@ if (got_minmax='0') then
 end if;
 end process;
 
-process(InpClk)
+process(InpClk,reset)
 --loads all a's
 variable counter: integer :=0;
 begin
-if (got_kernal='0') then
+if (reset='1') then
+   kernalreadstate<=get;
+   got_kernal <='0';
+
+elsif (got_kernal='0') then
     case kernalreadstate is
         when get=>
             kernaladdress <= std_logic_vector(to_unsigned(counter,4));
@@ -195,7 +188,8 @@ if (got_kernal='0') then
                 when 7=>
                     a8<=to_integer(unsigned(kernaldata));            counter:=counter+1;
                 when 8=>
-                    a9<=to_integer(unsigned(kernaldata));
+                    a9<=to_integer(unsigned(kernaldata));           counter:=counter+1;
+                when others=>
                     counter:=0;
                     got_kernal<='1';                                   
             end case;
@@ -209,27 +203,33 @@ variable counter : integer :=0;
 variable imgaddressvar : integer :=0;
 variable finalans : integer :=0;
 begin
+if(reset='1') then
+   done<='0';
+   writeenable<='0';
 
-if did='1' then
+elsif did='1' then
     done<='1';
     
-elsif got_kernal='1' then
+elsif got_kernal='1' and got_minmax='1' then
     writeenable<='1';
     case workingstate is
         when getting_data=>
            imgaddressvar := to_integer(unsigned(imgaddress));
-           
+           workingstate <= calculating;
         when calculating=>
             finalans:=a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9;
+            workingstate <= writing;
         when writing=>
             writabledata<=std_logic_vector(to_unsigned(finalans,8));
             imgaddressvar:=imgaddressvar+1;
             if imgaddressvar=4096 then
                 did<='1';
+                writeenable<='0';
                 imgaddressvar:=0;
             else
                 imgaddress<=std_logic_vector(to_unsigned(imgaddressvar,12));
             end if;
+            workingstate <= getting_data;
     end case;
 
 end if;

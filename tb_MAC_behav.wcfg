@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="tb_MAC_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="tb_MAC" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="333.001 ns"></ZoomEndTime>
+      <Cursor1Time time="30.000 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="340"></NameColumnWidth>
+      <ValueColumnWidth column_width="155"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="29" />
+   <wvobject fp_name="/tb_MAC/clock" type="logic">
+      <obj_property name="ElementShortName">clock</obj_property>
+      <obj_property name="ObjectShortName">clock</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/rst" type="logic">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/done" type="logic">
+      <obj_property name="ElementShortName">done</obj_property>
+      <obj_property name="ObjectShortName">done</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/InpClk" type="logic">
+      <obj_property name="ElementShortName">InpClk</obj_property>
+      <obj_property name="ObjectShortName">InpClk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/reset" type="logic">
+      <obj_property name="ElementShortName">reset</obj_property>
+      <obj_property name="ObjectShortName">reset</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/imgaddress" type="array">
+      <obj_property name="ElementShortName">imgaddress[11:0]</obj_property>
+      <obj_property name="ObjectShortName">imgaddress[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/kernaladdress" type="array">
+      <obj_property name="ElementShortName">kernaladdress[3:0]</obj_property>
+      <obj_property name="ObjectShortName">kernaladdress[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/imagedata" type="array">
+      <obj_property name="ElementShortName">imagedata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">imagedata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/kernaldata" type="array">
+      <obj_property name="ElementShortName">kernaldata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">kernaldata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/writabledata" type="array">
+      <obj_property name="ElementShortName">writabledata[7:0]</obj_property>
+      <obj_property name="ObjectShortName">writabledata[7:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/ramaddress" type="array">
+      <obj_property name="ElementShortName">ramaddress[11:0]</obj_property>
+      <obj_property name="ObjectShortName">ramaddress[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/writeenable" type="logic">
+      <obj_property name="ElementShortName">writeenable</obj_property>
+      <obj_property name="ObjectShortName">writeenable</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/did" type="logic">
+      <obj_property name="ElementShortName">did</obj_property>
+      <obj_property name="ObjectShortName">did</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/got_kernal" type="logic">
+      <obj_property name="ElementShortName">got_kernal</obj_property>
+      <obj_property name="ObjectShortName">got_kernal</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/got_minmax" type="logic">
+      <obj_property name="ElementShortName">got_minmax</obj_property>
+      <obj_property name="ObjectShortName">got_minmax</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a1" type="other">
+      <obj_property name="ElementShortName">a1</obj_property>
+      <obj_property name="ObjectShortName">a1</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a2" type="other">
+      <obj_property name="ElementShortName">a2</obj_property>
+      <obj_property name="ObjectShortName">a2</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a3" type="other">
+      <obj_property name="ElementShortName">a3</obj_property>
+      <obj_property name="ObjectShortName">a3</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a4" type="other">
+      <obj_property name="ElementShortName">a4</obj_property>
+      <obj_property name="ObjectShortName">a4</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a5" type="other">
+      <obj_property name="ElementShortName">a5</obj_property>
+      <obj_property name="ObjectShortName">a5</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a6" type="other">
+      <obj_property name="ElementShortName">a6</obj_property>
+      <obj_property name="ObjectShortName">a6</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a7" type="other">
+      <obj_property name="ElementShortName">a7</obj_property>
+      <obj_property name="ObjectShortName">a7</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a8" type="other">
+      <obj_property name="ElementShortName">a8</obj_property>
+      <obj_property name="ObjectShortName">a8</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/a9" type="other">
+      <obj_property name="ElementShortName">a9</obj_property>
+      <obj_property name="ObjectShortName">a9</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/maxval" type="other">
+      <obj_property name="ElementShortName">maxval</obj_property>
+      <obj_property name="ObjectShortName">maxval</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/minval" type="other">
+      <obj_property name="ElementShortName">minval</obj_property>
+      <obj_property name="ObjectShortName">minval</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/workingstate" type="other">
+      <obj_property name="ElementShortName">workingstate</obj_property>
+      <obj_property name="ObjectShortName">workingstate</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/kernalreadstate" type="other">
+      <obj_property name="ElementShortName">kernalreadstate</obj_property>
+      <obj_property name="ObjectShortName">kernalreadstate</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb_MAC/uut/minmaxreadstate" type="other">
+      <obj_property name="ElementShortName">minmaxreadstate</obj_property>
+      <obj_property name="ObjectShortName">minmaxreadstate</obj_property>
+   </wvobject>
+</wave_config>
