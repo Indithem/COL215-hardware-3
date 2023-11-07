@@ -13,8 +13,9 @@ use ieee.numeric_std.all;
 
 entity MAC is
     Port ( done : out STD_LOGIC;
-           InpClk : in STD_LOGIC;
-           reset : in STD_LOGIC);
+          InpClk : in STD_LOGIC;
+          reset : in STD_LOGIC
+          );
 end MAC;
 
 architecture Behavioral of MAC is
@@ -40,16 +41,17 @@ end component;
             );
         END COMPONENT;
  
-signal imgaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
+signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to 
 signal kernaladdress :  std_logic_vector(3 downto 0) := (others => '0'); --from 0 to 8
 
-signal imagedata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 to 8
+signal imagedata :  std_logic_vector(7 downto 0); --from 0 to 8
+signal ramdata :  std_logic_vector(7 downto 0); --from 0 to 8
 signal kernaldata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 to 8
 
 signal writabledata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 to 8
 signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
 
-signal wrte : std_logic;
+signal writeenable : std_logic;
 signal did: std_logic ;
 
 signal got_kernal: std_logic:='0';
@@ -76,7 +78,7 @@ signal b8 : integer :=0;
 signal b9 : integer :=0;
 
 signal maxval : integer :=0;
-signal minval : integer :=0;
+signal minval : integer :=255;
 
 
 type state is (getting_data, calculating, writing);
@@ -85,6 +87,7 @@ signal workingstate: state := getting_data;
 type read_state is (get, write);
 signal kernalreadstate : read_state;
 signal minmaxreadstate : read_state;
+signal imgreadstate : read_state;
 begin
 
 k:filter port map(
@@ -99,41 +102,12 @@ i: img port map(
 
 r: ram port map(
     clk=> InpClk,
-    we=> '0',
+    we=> writeenable,
     a=> ramaddress,
-    d=> writabledata
+    d=> writabledata,
+    spo=>ramdata
 );
 
-process(InpClk)
--- gets min and max values from the image
-variable counter: integer :=0;
-variable data: integer :=0;
-begin
-if (reset='1') then
-   got_minmax <='0';
-   minmaxreadstate<=get;
-elsif (got_minmax='0') then
-    case minmaxreadstate is
-        when get=>
-            imgaddress <= std_logic_vector(to_unsigned(counter,12));
-            minmaxreadstate<= write;
-        when write=>
-            minmaxreadstate<=get;
-            counter:=counter+1;
-            if counter=4096 then
-                counter:=0;
-                got_minmax<='1';
-            else   
-                data:= to_integer(unsigned(imagedata));
-                if data < minval then
-                    minval <= data;
-                elsif data > maxval then
-                    maxval <= data;
-                end if;
-            end if;
-    end case;
-end if;
-end process;
 
 process(InpClk,reset)
 --loads all a's
@@ -152,23 +126,23 @@ elsif (got_kernal='0') then
             kernalreadstate<=get;
             case counter is
                 when 0=>
-                    a1<=(to_integer(unsigned(kernaldata)));            counter:=counter+1;                   
+                    a1<=(to_integer(signed(kernaldata)));            counter:=counter+1;                   
                 when 1=>
-                    a2<=(to_integer(unsigned(kernaldata)));            counter:=counter+1;
+                    a2<=(to_integer(signed(kernaldata)));            counter:=counter+1;
                 when 2=>
-                    a3<=to_integer(unsigned(kernaldata));            counter:=counter+1;
+                    a3<=to_integer(signed(kernaldata));            counter:=counter+1;
                 when 3=>
-                    a4<=to_integer(unsigned(kernaldata));            counter:=counter+1;
+                    a4<=to_integer(signed(kernaldata));            counter:=counter+1;
                 when 4=>
-                    a5<=to_integer(unsigned(kernaldata));            counter:=counter+1;
+                    a5<=to_integer(signed(kernaldata));            counter:=counter+1;
                 when 5=>
-                    a6<=to_integer(unsigned(kernaldata));            counter:=counter+1;
+                    a6<=to_integer(signed(kernaldata));            counter:=counter+1;
                 when 6=>
-                    a7<=to_integer(unsigned(kernaldata));            counter:=counter+1;
+                    a7<=to_integer(signed(kernaldata));            counter:=counter+1;
                 when 7=>
-                    a8<=to_integer(unsigned(kernaldata));            counter:=counter+1;
+                    a8<=to_integer(signed(kernaldata));            counter:=counter+1;
                 when 8=>
-                    a9<=to_integer(unsigned(kernaldata));           counter:=counter+1;
+                    a9<=to_integer(signed(kernaldata));           counter:=counter+1;
                 when others=>
                     counter:=0;
                     got_kernal<='1';                                   
@@ -185,30 +159,163 @@ variable finalans : integer :=0;
 begin
 if(reset='1') then
    done<='0';
---   writeenable<='1';
-
+   writeenable<='1';
+   imgaddressvar:=0;
+   imgreadstate <= get;
+   counter:=0;
+   
 elsif did='1' then
     done<='1';
     
-elsif got_kernal='1' and got_minmax='1' then
+elsif rising_edge(InpClk) and got_kernal='1' then
 
     case workingstate is
         when getting_data=>
-           imgaddressvar := to_integer(unsigned(imgaddress));
-           workingstate <= calculating;
+            writeenable <= '0';
+            if imgaddressvar=4096 then
+                if got_minmax='0' then
+                    imgaddressvar:=0;
+                    imgreadstate<=get;
+                    got_minmax <= '1';
+                else
+                    workingstate<=getting_data;
+                    writeenable<='0';
+                    imgaddressvar:=0;
+                    imgreadstate<=get;
+                    did <='1';
+                end if;
+            else
+            case imgreadstate is
+                when get=>
+                    case counter is
+                        when 0=>
+                            if imgaddressvar < 64 then
+                                b1<=0;
+                                b2<=0;
+                                b3<=0;
+                                counter:=3;
+                            elsif (imgaddressvar rem 64) =0 then
+                                b1<=0;
+                                counter:=1;
+                            else
+                                -- imgaddress<=imgaddressvar-64-1;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar-65),12));
+                                imgreadstate <= write;                                
+                            end if;
+                        when 1=>
+                            -- imgaddress<=imgaddressvar-64;
+                            imgaddress<=std_logic_vector(to_unsigned((imgaddressvar-64),12));
+                            imgreadstate <= write;                                
+                        when 2=>
+                            if ((imgaddressvar+1) rem 64) =0 then
+                                b3<=0;
+                                counter:=3;
+                            else
+                                -- imgaddress<=imgaddressvar-64+1;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar-63),12));
+                                imgreadstate <= write;
+                            end if;
+                        when 3=>
+                            if ((imgaddressvar) rem 64) =0 then
+                                b4<=0;
+                                counter:=4;
+                            else
+                                -- imgaddress<=imgaddressvar-1;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar-1),12));
+                                imgreadstate <= write;
+                            end if;
+                        when 4=>
+                            -- imgaddress<=imgaddressvar;
+                            imgaddress<=std_logic_vector(to_unsigned((imgaddressvar),12));
+                            imgreadstate <= write;
+                        when 5=>
+                            if ((imgaddressvar+1) rem 64) =0 then
+                                b6<=0;
+                                counter:=6;
+                            else
+                                -- imgaddress<=imgaddressvar+1;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar+1),12));
+                                imgreadstate <= write;
+                            end if;   
+                        when 6=>
+                            if imgaddressvar > 4031 then
+                                b7<=0;
+                                b8<=0;
+                                b9<=0;
+                                counter:=9;
+                            elsif (imgaddressvar rem 64) =0 then
+                                b7<=0;
+                                counter:=7;
+                            else
+                                -- imgaddress<=imgaddressvar+64-1;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar+63),12));
+                                imgreadstate <= write;                                
+                            end if;
+                        when 7=>
+                                -- imgaddress<=imgaddressvar+64;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar+64),12));
+                                imgreadstate <= write;
+                        when 8=>
+                            if ((imgaddressvar+1) rem 64) =0 then
+                                b9<=0;
+                                counter:=9;
+                            else
+                                -- imgaddress<=imgaddressvar+64+1;
+                                imgaddress<=std_logic_vector(to_unsigned((imgaddressvar+65),12));
+                                imgreadstate <= write;
+                            end if;
+                        when others=>
+                            counter:=0;
+                            workingstate <= calculating;
+                    end case;
+                    
+                when write=>
+                case counter is
+                    when 0=>
+                        b1<=(to_integer(unsigned(imagedata)));            counter:=counter+1;                   
+                    when 1=>
+                        b2<=(to_integer(unsigned(imagedata)));            counter:=counter+1;
+                    when 2=>
+                        b3<=to_integer(unsigned(imagedata));            counter:=counter+1;
+                    when 3=>
+                        b4<=to_integer(unsigned(imagedata));            counter:=counter+1;
+                    when 4=>
+                        b5<=to_integer(unsigned(imagedata));            counter:=counter+1;
+                    when 5=>
+                        b6<=to_integer(unsigned(imagedata));            counter:=counter+1;
+                    when 6=>
+                        b7<=to_integer(unsigned(imagedata));            counter:=counter+1;
+                    when 7=>
+                        b8<=to_integer(unsigned(imagedata));            counter:=counter+1;
+                    when 8=>
+                        b9<=to_integer(unsigned(imagedata));           counter:=counter+1;
+                    when others=>
+                        counter:=0;
+                        workingstate <= calculating;
+                end case;
+                imgreadstate<=get;
+            end case;
+            end if;
         when calculating=>
-            finalans:=a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9;
-            workingstate <= writing;
+            if got_minmax='0' then
+                finalans:=a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9;
+                if finalans < minval then
+                    minval <= finalans;
+                end if;
+                if finalans > maxval then
+                    maxval <= finalans;
+                end if;
+                workingstate <= getting_data;
+                imgaddressvar := imgaddressvar +1;
+            else
+                finalans:= (a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9-minval)*255/(maxval-minval);
+                workingstate <= writing;
+            end if;
         when writing=>
+            writeenable <='1';
+            ramaddress <= std_logic_vector(to_unsigned(imgaddressvar,12));
             writabledata<=std_logic_vector(to_unsigned(finalans,8));
             imgaddressvar:=imgaddressvar+1;
-            if imgaddressvar=4096 then
-                did<='1';
---                writeenable<='0';
-                imgaddressvar:=0;
-            else
-                imgaddress<=std_logic_vector(to_unsigned(imgaddressvar,12));
-            end if;
             workingstate <= getting_data;
     end case;
 
