@@ -172,8 +172,8 @@ const int NumRelocateId= 112;
 void relocate(char *dp)
 {
 	iki_relocate(dp, "xsim.dir/MAC_behav/xsim.reloc",  (void **)funcTab, 112);
-	iki_vhdl_file_variable_register(dp + 76480);
-	iki_vhdl_file_variable_register(dp + 76536);
+	iki_vhdl_file_variable_register(dp + 76576);
+	iki_vhdl_file_variable_register(dp + 76632);
 
 
 	/*Populate the transaction function pointer field in the whole net structure */
@@ -189,17 +189,17 @@ void simulate(char *dp)
 		iki_schedule_processes_at_time_zero(dp, "xsim.dir/MAC_behav/xsim.reloc");
 	// Initialize Verilog nets in mixed simulation, for the cases when the value at time 0 should be propagated from the mixed language Vhdl net
 
-	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82072, dp + 85488, 0, 3, 0, 3, 4, 1);
+	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82168, dp + 85648, 0, 3, 0, 3, 4, 1);
 
-	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 81976, dp + 94744, 0, 11, 0, 11, 12, 1);
+	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82072, dp + 94904, 0, 11, 0, 11, 12, 1);
 
-	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 81864, dp + 104104, 0, 0, 0, 0, 1, 1);
+	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 81960, dp + 104264, 0, 0, 0, 0, 1, 1);
 
-	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82312, dp + 104160, 0, 0, 0, 0, 1, 1);
+	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82408, dp + 104320, 0, 0, 0, 0, 1, 1);
 
-	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82272, dp + 103992, 0, 11, 0, 11, 12, 1);
+	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82368, dp + 104152, 0, 11, 0, 11, 12, 1);
 
-	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82232, dp + 104048, 0, 7, 0, 7, 8, 1);
+	iki_vlog_schedule_transaction_signal_fast_vhdl_value_time_0(dp + 82328, dp + 104208, 0, 7, 0, 7, 8, 1);
 	iki_execute_processes();
 
 	// Schedule resolution functions for the multiply driven Verilog nets that have strength
