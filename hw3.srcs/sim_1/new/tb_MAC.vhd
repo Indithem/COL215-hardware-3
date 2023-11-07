@@ -44,7 +44,6 @@ end component;
         END COMPONENT;
  
 signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to 
-signal imgint : integer;
 signal kernaladdress :  std_logic_vector(3 downto 0) := (others => '0'); --from 0 to 8
 
 signal imagedata :  std_logic_vector(7 downto 0); --from 0 to 8
@@ -84,7 +83,7 @@ signal maxval : integer :=0;
 signal minval : integer :=255;
 
 
-type state is (getting_data, calculating, writing, normalization_calculating);
+type state is (getting_data, calculating, writing);
 signal workingstate: state := getting_data;
 
 type read_state is (get, write);
@@ -187,11 +186,19 @@ elsif rising_edge(InpClk) and got_kernal='1' then
 
     case workingstate is
         when getting_data=>
+            writeenable <= '0';
             if imgaddressvar=4096 then
-                workingstate<=normalization_calculating;
-                writeenable<='0';
-                imgaddressvar:=0;
-                imgreadstate<=get;
+                if got_minmax='0' then
+                    imgaddressvar:=0;
+                    imgreadstate<=get;
+                    got_minmax <= '1';
+                else
+                    workingstate<=getting_data;
+                    writeenable<='0';
+                    imgaddressvar:=0;
+                    imgreadstate<=get;
+                    did <='1';
+                end if;
             else
             case imgreadstate is
                 when get=>
@@ -305,45 +312,26 @@ elsif rising_edge(InpClk) and got_kernal='1' then
             end case;
             end if;
         when calculating=>
-            finalans:=a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9;
-            if finalans < 0 then
-                finalans := 0;
-            elsif finalans > 255 then
-                finalans:=255;
+            if got_minmax='0' then
+                finalans:=a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9;
+                if finalans < minval then
+                    minval <= finalans;
+                end if;
+                if finalans > maxval then
+                    maxval <= finalans;
+                end if;
+                workingstate <= getting_data;
+                imgaddressvar := imgaddressvar +1;
+            else
+                finalans:= (a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9-minval)*255/(maxval-minval);
+                workingstate <= writing;
             end if;
-            if finalans < minval then
-                minval <= finalans;
-            end if;
-            if finalans > maxval then
-                maxval <= finalans;
-            end if;
-            workingstate <= writing;
         when writing=>
+            writeenable <='1';
             ramaddress <= std_logic_vector(to_unsigned(imgaddressvar,12));
             writabledata<=std_logic_vector(to_unsigned(finalans,8));
             imgaddressvar:=imgaddressvar+1;
             workingstate <= getting_data;
-        when normalization_calculating=>
-            if imgaddressvar=4096 then
-                workingstate<=getting_data;
-                writeenable<='0';
-                imgaddressvar:=0;
-                imgreadstate<=get;
-                did<='1';
-            else
-                case imgreadstate is
-                    when get=>
-                        writeenable <= '0';
-                        ramaddress <= std_logic_vector(to_unsigned(imgaddressvar,12));
-                        imgreadstate <= write;
-                    when write=>
-                        finalans:= (to_integer(unsigned(ramdata))-minval)*255/(maxval-minval);
-                        writabledata<=std_logic_vector(to_unsigned(finalans,8));
-                        writeenable <= '1';
-                        imgaddressvar:=imgaddressvar+1;
-                        imgreadstate<= get;
-                end case;
-            end if;
     end case;
 
 end if;
