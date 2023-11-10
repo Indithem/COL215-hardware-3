@@ -1,6 +1,8 @@
 # compile verilog/system verilog design source files
 verilog xil_defaultlib  \
+"../../../../hw3.gen/sources_1/ip/ram/sim/ram.v" \
 "../../../../hw3.gen/sources_1/ip/img/sim/img.v" \
+"../../../../hw3.gen/sources_1/ip/filter/sim/filter.v" \
 
 # compile glbl module
 verilog xil_defaultlib "glbl.v"

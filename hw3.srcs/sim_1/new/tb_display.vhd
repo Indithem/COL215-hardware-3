@@ -60,14 +60,40 @@ component img is port(
 );
 end component;
 
+component ram PORT(
+    clk : IN STD_LOGIC;
+    we : IN std_logic;
+    a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+    spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+    d: IN std_logic_vector(7 DOWNTO 0)
+    );
+END COMPONENT;
+
+component MAC is
+    Port 
+        ( 
+        InpClk : in STD_LOGIC;
+        reset : in STD_LOGIC;
+        done : out STD_LOGIC;
+        a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+        spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
+        );
+end COMPONENT;
+
 signal Pclk : std_logic;
 signal Inp_clk : std_logic:='0';
--- signal from_rom_swicth : std_logic:='0';
+signal from_ram_switch : std_logic:='0';
 
 signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to 
 signal imagedata :  std_logic_vector(7 downto 0); --from 0 to 8
 
 signal change_addr: integer:=-1;
+
+signal ramdata :  std_logic_vector(7 downto 0); --from 0 to 8
+signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
+
+signal done_mac : std_logic;
+signal rst : std_logic:='1';
 
 begin
 
@@ -76,6 +102,14 @@ process
 begin
 wait for 5ns;
 Inp_clk <= not Inp_clk;
+end process ;
+
+process
+begin
+wait for 100 us;
+rst <= '0';
+wait for 2 ms;
+from_ram_switch <= '1';    
 end process ;
 
 pclock: clock_divider port map (
@@ -88,6 +122,14 @@ i: img port map(
     spo=> imagedata
 );
 
+m: mac port map(
+    done => done_mac,
+    InpClk =>Inp_clk,
+    reset => rst,
+    a => ramaddress,
+    spo => ramdata
+);
+
 process(inp_clk)
 begin
 if change_addr=-1 then
@@ -95,10 +137,22 @@ if change_addr=-1 then
     green <= (others=>'0');
     Blue <= (others=>'0');
 else
-    imgaddress<=std_logic_vector(to_unsigned(change_addr,12));
-    Red <= imagedata(7 downto 4);
-    Green <= imagedata(7 downto 4);
-    Blue <= imagedata(7 downto 4);
+    if from_ram_switch='0' then
+        imgaddress<=std_logic_vector(to_unsigned(change_addr,12));
+        Red <= imagedata(7 downto 4);
+        Green <= imagedata(7 downto 4);
+        Blue <= imagedata(7 downto 4);
+    else
+        if done_mac='1' then
+            ramaddress<=std_logic_vector(to_unsigned(change_addr,12));
+            Red <= ramdata(7 downto 4);
+            Green <= ramdata(7 downto 4);
+            Blue <= ramdata(7 downto 4);
+        else
+            Red <= (others=>'1');
+            Green <= (others=>'1');
+            Blue <= (others=>'1');
+    end if;
 end if ;
 end process ;
 

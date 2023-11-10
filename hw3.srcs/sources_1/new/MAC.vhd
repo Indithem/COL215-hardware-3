@@ -12,9 +12,12 @@ use ieee.numeric_std.all;
 --use UNISIM.VComponents.all;
 
 entity MAC is
-    Port ( done : out STD_LOGIC;
+    Port ( 
           InpClk : in STD_LOGIC;
-          reset : in STD_LOGIC
+          reset : in STD_LOGIC;
+          done : out STD_LOGIC;
+          a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
+          spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
           );
 end MAC;
 
@@ -166,6 +169,8 @@ if(reset='1') then
    
 elsif did='1' then
     done<='1';
+    ramaddress<=a;
+    spo<=ramdata;
     
 elsif rising_edge(InpClk) and got_kernal='1' then
 
