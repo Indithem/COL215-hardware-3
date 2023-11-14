@@ -33,7 +33,7 @@ entity display_image is
 
 
   Port (
-     Inp_clock: in std_logic;
+     basysclock: in std_logic;
     -- from_rom_switch : in std_logic;
 
     Red: out std_logic_vector(3 downto 0);
@@ -84,7 +84,6 @@ component MAC is
 end COMPONENT;
 
 signal Pclk : std_logic;
-signal Inp_clk : std_logic:='0';
 
 signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to 
 signal imagedata :  std_logic_vector(7 downto 0); --from 0 to 8
@@ -100,7 +99,7 @@ begin
 
 
 pclock: clock_divider port map (
-    InpClk => Inp_clk,
+    InpClk => basysclock,
     outclk => Pclk
 );
 
@@ -111,13 +110,13 @@ i: img port map(
 
 m: mac port map(
     done => done_mac,
-    InpClk =>Inp_clk,
+    InpClk =>basysclock,
     reset => rst,
     a => ramaddress,
     spo => ramdata
 );
 
-process(inp_clk)
+process(basysclock)
 begin
 if change_addr=-1 then
     Red <= (others=>'0');
