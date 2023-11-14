@@ -33,7 +33,7 @@ entity display_image is
 
 
   Port (
-    -- Inp_clock: in std_logic;
+     Inp_clock: in std_logic;
     -- from_rom_switch : in std_logic;
 
     Red: out std_logic_vector(3 downto 0);
