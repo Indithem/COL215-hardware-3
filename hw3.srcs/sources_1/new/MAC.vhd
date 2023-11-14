@@ -43,7 +43,7 @@ end component;
             d: IN std_logic_vector(7 DOWNTO 0)
             );
         END COMPONENT;
- 
+
 signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to 
 signal kernaladdress :  std_logic_vector(3 downto 0) := (others => '0'); --from 0 to 8
 
@@ -53,12 +53,13 @@ signal kernaldata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 t
 
 signal writabledata :  std_logic_vector(7 downto 0) := (others => '0'); --from 0 to 8
 signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
-
+            
+signal finalans : integer :=0;
+signal diff : integer :=0;
 signal writeenable : std_logic;
 signal did: std_logic ;
 
 signal got_kernal: std_logic:='0';
-signal got_minmax: std_logic:='0';
 
 signal a1 : integer :=0;
 signal a2 : integer :=0;
@@ -91,6 +92,8 @@ type read_state is (get, write);
 signal kernalreadstate : read_state;
 signal minmaxreadstate : read_state;
 signal imgreadstate : read_state;
+
+signal calc_counter:integer:=0;
 begin
 
 k:filter port map(
@@ -158,7 +161,6 @@ process(InpClk)
 -- the main function
 variable counter : integer :=0;
 variable imgaddressvar : integer :=0;
-variable finalans : integer :=0;
 begin
 if(reset='1') then
    done<='0';
@@ -178,10 +180,10 @@ elsif rising_edge(InpClk) and got_kernal='1' then
         when getting_data=>
             writeenable <= '0';
             if imgaddressvar=4096 then
-                if got_minmax='0' then
+                if diff=0 then
                     imgaddressvar:=0;
                     imgreadstate<=get;
-                    got_minmax <= '1';
+                    diff <= maxval-minval;
                 else
                     workingstate<=getting_data;
                     writeenable<='0';
@@ -272,6 +274,7 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                         when others=>
                             counter:=0;
                             workingstate <= calculating;
+                            calc_counter<=0;
                     end case;
                     
                 when write=>
@@ -297,25 +300,40 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                     when others=>
                         counter:=0;
                         workingstate <= calculating;
+                        calc_counter<=0;
                 end case;
                 imgreadstate<=get;
             end case;
             end if;
         when calculating=>
-            if got_minmax='0' then
-                finalans:=a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9;
-                if finalans < minval then
-                    minval <= finalans;
-                end if;
-                if finalans > maxval then
-                    maxval <= finalans;
-                end if;
-                workingstate <= getting_data;
-                imgaddressvar := imgaddressvar +1;
-            else
-                finalans:= (a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9-minval)*255/(maxval-minval);
-                workingstate <= writing;
-            end if;
+            case calc_counter is
+                when 0=>
+                    finalans<=(a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9);
+                    calc_counter <=9;
+                when others=>
+                    if diff=0 then
+                        if finalans < minval then
+                            minval <= finalans;
+                        end if;
+                        if finalans > maxval then
+                            maxval <= finalans;
+                        end if;
+                        workingstate <= getting_data;
+                        imgaddressvar := imgaddressvar +1;
+                    else
+                        case calc_counter is
+                            when 9=>
+                                finalans<= (finalans-minval)*255;
+                                calc_counter<=10;
+                            when 10=>
+                                finalans<= finalans/diff;
+                                calc_counter<=11;
+                            when 11=> calc_counter<=12;
+                            when others=>
+                                workingstate <= writing;
+                        end case;
+                    end if;
+            end case;
         when writing=>
             writeenable <='1';
             ramaddress <= std_logic_vector(to_unsigned(imgaddressvar,12));

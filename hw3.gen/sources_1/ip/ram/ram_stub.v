@@ -2,7 +2,7 @@
 // Copyright 2022-2023 Advanced Micro Devices, Inc. All Rights Reserved.
 // --------------------------------------------------------------------------------
 // Tool Version: Vivado v.2023.2 (win64) Build 4029153 Fri Oct 13 20:14:34 MDT 2023
-// Date        : Mon Nov  6 22:22:29 2023
+// Date        : Tue Nov 14 17:36:33 2023
 // Host        : LAPTOP-DN3M17Z running 64-bit major release  (build 9200)
 // Command     : write_verilog -force -mode synth_stub {c:/Users/Sreenu/OneDrive - IIT
 //               Delhi/A/COL215/Assignments/hw3/hw3.gen/sources_1/ip/ram/ram_stub.v}

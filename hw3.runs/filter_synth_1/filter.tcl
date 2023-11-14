@@ -70,7 +70,7 @@ proc create_report { reportName command } {
   }
 }
 OPTRACE "filter_synth_1" START { ROLLUP_AUTO }
-set_param tcl.statsThreshold 360
+set_param chipscope.maxJobs 4
 set_param project.vivado.isBlockSynthRun true
 set_msg_config -msgmgr_mode ooc_run
 OPTRACE "Creating in-memory project" START { }
@@ -83,12 +83,12 @@ set_msg_config -source 4 -id {IP_Flow 19-2162} -severity warning -new_severity i
 set_property webtalk.parent_dir {C:/Users/Sreenu/OneDrive - IIT Delhi/A/COL215/Assignments/hw3/hw3.cache/wt} [current_project]
 set_property parent.project_path {C:/Users/Sreenu/OneDrive - IIT Delhi/A/COL215/Assignments/hw3/hw3.xpr} [current_project]
 set_property default_lib xil_defaultlib [current_project]
-set_property target_language Verilog [current_project]
+set_property target_language VHDL [current_project]
 set_property ip_output_repo {c:/Users/Sreenu/OneDrive - IIT Delhi/A/COL215/Assignments/hw3/hw3.cache/ip} [current_project]
 set_property ip_cache_permissions {read write} [current_project]
 OPTRACE "Creating in-memory project" END { }
 OPTRACE "Adding files" START { }
-read_ip -quiet {{c:/Users/Sreenu/OneDrive - IIT Delhi/A/COL215/Assignments/hw3/hw3.srcs/sources_1/ip/filter/filter.xci}}
+read_ip -quiet {{C:/Users/Sreenu/OneDrive - IIT Delhi/A/COL215/Assignments/hw3/hw3.srcs/sources_1/ip/filter/filter.xci}}
 set_property used_in_implementation false [get_files -all {{c:/Users/Sreenu/OneDrive - IIT Delhi/A/COL215/Assignments/hw3/hw3.gen/sources_1/ip/filter/filter_ooc.xdc}}]
 
 OPTRACE "Adding files" END { }

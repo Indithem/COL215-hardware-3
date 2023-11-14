@@ -152,6 +152,7 @@ else
             Red <= (others=>'1');
             Green <= (others=>'1');
             Blue <= (others=>'1');
+        end if;
     end if;
 end if ;
 end process ;
