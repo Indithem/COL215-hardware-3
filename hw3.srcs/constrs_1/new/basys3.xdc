@@ -11,8 +11,8 @@ set_property PACKAGE_PIN W5 [get_ports basys_clock]
 # Switches
 set_property PACKAGE_PIN V17 [get_ports from_ram_switch]					
 	set_property IOSTANDARD LVCMOS33 [get_ports from_ram_switch]
-#set_property PACKAGE_PIN V16 [get_ports {sw[1]}]					
-#	set_property IOSTANDARD LVCMOS33 [get_ports {sw[1]}]
+set_property PACKAGE_PIN V16 [get_ports rst]					
+	set_property IOSTANDARD LVCMOS33 [get_ports rst]
 #set_property PACKAGE_PIN W16 [get_ports {sw[2]}]					
 	#set_property IOSTANDARD LVCMOS33 [get_ports {sw[2]}]
 #set_property PACKAGE_PIN W17 [get_ports {sw[3]}]					
@@ -108,8 +108,8 @@ set_property PACKAGE_PIN V17 [get_ports from_ram_switch]
 
 
 ##Buttons
-set_property PACKAGE_PIN U18 [get_ports rst]						
-	set_property IOSTANDARD LVCMOS33 [get_ports rst]
+#set_property PACKAGE_PIN U18 [get_ports rst]						
+#	set_property IOSTANDARD LVCMOS33 [get_ports rst]
 #set_property PACKAGE_PIN T18 [get_ports btnU]						
 	#set_property IOSTANDARD LVCMOS33 [get_ports btnU]
 #set_property PACKAGE_PIN W19 [get_ports btnL]						

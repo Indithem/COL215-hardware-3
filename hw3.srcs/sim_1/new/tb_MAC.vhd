@@ -13,8 +13,8 @@ use ieee.numeric_std.all;
 
 entity MAC is
     Port ( 
-        --   InpClk : in STD_LOGIC;
-        --   reset : in STD_LOGIC;
+          InpClk : in STD_LOGIC;
+          reset : in STD_LOGIC;
           done : out STD_LOGIC;
           a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
           spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
@@ -22,8 +22,6 @@ entity MAC is
 end MAC;
 
 architecture Behavioral of MAC is
-signal InpClk : std_LOGIC := '0';
-signal reset : std_LOGIC := '0';
 
 component img is port(
     a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
@@ -59,7 +57,6 @@ signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 
 signal finalans : integer :=0;
 signal diff : integer :=0;
 signal writeenable : std_logic;
-signal did: std_logic ;
 
 signal got_kernal: std_logic:='0';
 
@@ -87,7 +84,7 @@ signal maxval : integer :=0;
 signal minval : integer :=255;
 
 
-type state is (getting_data, calculating, writing);
+type state is (getting_data, calculating, writing, done_filtering);
 signal workingstate: state := getting_data;
 
 type read_state is (get, write);
@@ -116,19 +113,6 @@ r: ram port map(
     spo=>ramdata
 );
 
-process
-begin
-wait for 5 ns;
-Inpclk <= not inpclk;
-end process;
-
-process
-begin
-reset <='1';
-wait for 20ns;
-reset <='0';
-wait;
-end process;
 
 process(InpClk,reset)
 --loads all a's
@@ -176,19 +160,17 @@ process(InpClk)
 -- the main function
 variable counter : integer :=0;
 variable imgaddressvar : integer :=0;
+variable did: std_logic ;
 begin
 if(reset='1') then
    done<='0';
    writeenable<='1';
    imgaddressvar:=0;
    imgreadstate <= get;
+   diff <= 0;
+   workingstate <= getting_data;
    counter:=0;
-   
-elsif did='1' then
-    done<='1';
-    ramaddress<=a;
-    spo<=ramdata;
-    
+
 elsif rising_edge(InpClk) and got_kernal='1' then
 
     case workingstate is
@@ -200,11 +182,10 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                     imgreadstate<=get;
                     diff <= maxval-minval;
                 else
-                    workingstate<=getting_data;
+                    workingstate<=done_filtering;
                     writeenable<='0';
                     imgaddressvar:=0;
                     imgreadstate<=get;
-                    did <='1';
                 end if;
             else
             case imgreadstate is
@@ -355,8 +336,12 @@ elsif rising_edge(InpClk) and got_kernal='1' then
             writabledata<=std_logic_vector(to_unsigned(finalans,8));
             imgaddressvar:=imgaddressvar+1;
             workingstate <= getting_data;
+        when done_filtering=>
+            done<='1';
+            ramaddress<=a;
+            spo<=ramdata;
     end case;
-
+                    
 end if;
 
 

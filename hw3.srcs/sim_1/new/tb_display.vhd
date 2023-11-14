@@ -108,8 +108,13 @@ process
 begin
 wait for 100 us;
 rst <= '0';
-wait for 2 ms;
-from_ram_switch <= '1';    
+wait for 2000 us;
+rst <= '1';
+wait for 100 us;
+rst <= '0';
+wait for 2000 us;
+from_ram_switch <= '1';   
+wait; 
 end process ;
 
 pclock: clock_divider port map (
