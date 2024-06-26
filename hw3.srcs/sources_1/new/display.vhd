@@ -1,19 +1,10 @@
-
 LIBRARY ieee;
 USE ieee.std_logic_1164.ALL;
 use ieee.numeric_std.all;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
 entity display_image is
-
+    -- this is the top level entity. It contains instances of the other components
+    -- code here is responsible for displaying the image on the screen
 
     generic(   
          constant htotal_pixels : integer := 64;
@@ -33,8 +24,9 @@ entity display_image is
 
 
   Port (
+    -- this was described in the constraints file
+    -- the clock signal from the basys board
     basys_clock: in std_logic;
-    -- from_rom_switch : in std_logic;
 
     Red: out std_logic_vector(3 downto 0);
     Green: out std_logic_vector(3 downto 0);
@@ -42,7 +34,9 @@ entity display_image is
     hsync : out std_logic:='1';
     vsync : out std_logic:='1';
 
+    -- a toggle switch to switch between the image and the filtered image
     from_ram_switch : in std_logic;
+    -- a reset key, but this didnt work during the submission :<
     rst : in std_logic
    );
    
@@ -50,6 +44,8 @@ end display_image;
 
 architecture Behavioral of display_image is
 
+-- A clock that runs at half the frequency of the input clock
+-- we made this in ./clock_divider.vhd
 component clock_divider is
   Port ( 
     InpClk: in std_logic;
@@ -57,12 +53,14 @@ component clock_divider is
   );
 end component;
 
+-- ROM containing the image
 component img is port(
     a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
     spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 );
 end component;
 
+-- RAM containing the filtered image
 component ram PORT(
     clk : IN STD_LOGIC;
     we : IN std_logic;
@@ -72,6 +70,10 @@ component ram PORT(
     );
 END COMPONENT;
 
+-- In the assignment, we were supposed to implement a MAC unit
+-- I didn't know what that was, so I made a new unit to perform all filtering operations
+--
+-- 
 component MAC is
     Port 
         ( 
@@ -83,21 +85,27 @@ component MAC is
         );
 end COMPONENT;
 
+-- clock signal from the clock divider, aka Pixel clock
 signal Pclk : std_logic;
 
-signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to 
+-- the address that we currently want to access
+signal imgaddress :  std_logic_vector(11 downto 0); --from 0 to
+-- data of the image at the current address 
 signal imagedata :  std_logic_vector(7 downto 0); --from 0 to 8
 
+-- the addresss to which `imgaddress` should be changed in the next cycle
+-- or -1 if we are just out of bounds
 signal change_addr: integer:=-1;
 
 signal ramdata :  std_logic_vector(7 downto 0); --from 0 to 8
 signal ramaddress :  std_logic_vector(11 downto 0) := (others => '0'); --from 0 to 
 
+-- is the filtering operation by the MAC unit done/ready?
 signal done_mac : std_logic;
 
 begin
 
-
+-- map the ports to some implementations of the components
 pclock: clock_divider port map (
     InpClk => basys_clock,
     outclk => Pclk
@@ -116,8 +124,10 @@ m: mac port map(
     spo => ramdata
 );
 
+-- The process responsible for figuring which pixel to display
 process(basys_clock)
 begin
+-- on image out of bounds, display black
 if change_addr=-1 then
     Red <= (others=>'0');
     green <= (others=>'0');
@@ -148,6 +158,8 @@ variable v_iter: integer:=0;
 variable h_iter: integer:=-1;
 begin
 
+-- I believe this is a good template code,
+-- infact i made this in the previous assignment and coppied it over here
 if rising_edge(Pclk) then
     h_iter := h_iter+1;
 

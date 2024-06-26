@@ -1,16 +1,10 @@
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 use ieee.numeric_std.all;
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
 
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
+-- This entity is responsible for the filtering calculation
+-- MAC is a misnomer, it could be called the filter entity
+--      but, I've submitted my assignment now, so whatever
 entity MAC is
     Port ( 
           InpClk : in STD_LOGIC;
@@ -23,18 +17,22 @@ end MAC;
 
 architecture Behavioral of MAC is
 
+-- another instance of the original image in ROM
 component img is port(
     a : IN STD_LOGIC_VECTOR(11 DOWNTO 0);
     spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 );
 end component;
 
+-- the filter kernel
 component filter is port(
     a : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
     spo : OUT STD_LOGIC_VECTOR(7 DOWNTO 0)
 );
 end component;
 
+-- the privately owned ram
+-- this is where the filtered image is stored
  component ram PORT(
             clk : IN STD_LOGIC;
             we : IN std_logic;
@@ -83,10 +81,12 @@ signal b9 : integer :=0;
 signal maxval : integer :=0;
 signal minval : integer :=255;
 
-
+-- These things make a FSM
 type state is (getting_data, calculating, writing, done_filtering);
 signal workingstate: state := getting_data;
 
+-- you cannot read and write to RAM in the same cycle,
+-- so we need to keep track of what we're doing
 type read_state is (get, write);
 signal kernalreadstate : read_state;
 signal minmaxreadstate : read_state;
@@ -113,7 +113,7 @@ r: ram port map(
     spo=>ramdata
 );
 
-
+-- load the kernal from ROM onto registers
 process(InpClk,reset)
 --loads all a's
 variable counter: integer :=0;
@@ -172,12 +172,17 @@ if(reset='1') then
    counter:=0;
 
 elsif rising_edge(InpClk) and got_kernal='1' then
-
+    -- this makes an FSM
     case workingstate is
+        -- this is the state where we load the input image onto b registers
+        -- get the image approprately considering edge cases (literally)
         when getting_data=>
             writeenable <= '0';
+            -- done one iteration of calculations
             if imgaddressvar=4096 then
                 if diff=0 then
+                    -- the completed operation was not normalized.
+                    -- need to normalize the image using `diff` register
                     imgaddressvar:=0;
                     imgreadstate<=get;
                     diff <= maxval-minval;
@@ -188,7 +193,11 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                     imgreadstate<=get;
                 end if;
             else
+            -- this state is splitted because
+            -- it takes atmost one cycle to load image data from ROM onto registers
+            -- considering the time from loading address registers of ROM
             case imgreadstate is
+                -- load the address variable onto ROM address registers
                 when get=>
                     case counter is
                         when 0=>
@@ -273,6 +282,7 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                             calc_counter<=0;
                     end case;
                     
+                -- write the ROM data register onto one of the b registers
                 when write=>
                 case counter is
                     when 0=>
@@ -303,10 +313,15 @@ elsif rising_edge(InpClk) and got_kernal='1' then
             end if;
         when calculating=>
             case calc_counter is
+                -- calculatre the MAC
                 when 0=>
+                    -- this was the one thing that lead to bad grade for this assignment
+                    -- all these add multiply operations take time
+                    -- this was the reason a synchronised MAC was needed in this assignment
                     finalans<=(a1*b1+a2*b2+a3*b3+a4*b4+a5*b5+a6*b6+a7*b7+a8*b8+a9*b9);
                     calc_counter <=9;
                 when others=>
+                    -- update min and max
                     if diff=0 then
                         if finalans < minval then
                             minval <= finalans;
@@ -317,6 +332,8 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                         workingstate <= getting_data;
                         imgaddressvar := imgaddressvar +1;
                     else
+                        -- do the normalization in 3 cycles
+                        -- (if only I did something like this when doing MAC)
                         case calc_counter is
                             when 9=>
                                 finalans<= (finalans-minval)*255;
@@ -330,12 +347,17 @@ elsif rising_edge(InpClk) and got_kernal='1' then
                         end case;
                     end if;
             end case;
+        
+        -- write into RAM
         when writing=>
             writeenable <='1';
             ramaddress <= std_logic_vector(to_unsigned(imgaddressvar,12));
             writabledata<=std_logic_vector(to_unsigned(finalans,8));
             imgaddressvar:=imgaddressvar+1;
             workingstate <= getting_data;
+        
+        -- emit done signal
+        -- act as a proxy between the owned RAM
         when done_filtering=>
             done<='1';
             ramaddress<=a;

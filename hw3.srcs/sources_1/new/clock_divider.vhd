@@ -1,36 +1,12 @@
-----------------------------------------------------------------------------------
--- Company: 
--- Engineer: 
--- 
--- Create Date: 10.11.2023 11:53:14
--- Design Name: 
--- Module Name: clock_divider - Behavioral
--- Project Name: 
--- Target Devices: 
--- Tool Versions: 
--- Description: 
--- 
--- Dependencies: 
--- 
--- Revision:
--- Revision 0.01 - File Created
--- Additional Comments:
--- 
-----------------------------------------------------------------------------------
-
-
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
--- Uncomment the following library declaration if using
--- arithmetic functions with Signed or Unsigned values
---use IEEE.NUMERIC_STD.ALL;
-
--- Uncomment the following library declaration if instantiating
--- any Xilinx leaf cells in this code.
---library UNISIM;
---use UNISIM.VComponents.all;
-
+-- This module is responsible for maintaining proper
+-- display refresh rate.
+--
+-- Our board used a internal clock of 100 MHz.
+-- But we need to drive our pixel clock at 50 MHz. (for why this frequency see assignment 2)
+-- So we need to divide the clock by 2.
 entity clock_divider is
     Port ( InpClk : in STD_LOGIC;
            OutClk : out STD_LOGIC);
